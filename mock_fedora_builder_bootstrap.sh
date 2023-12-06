@@ -102,7 +102,7 @@ if [ "$(docker images | awk '{ print $1 }' | grep "$stage2")" = "" ];then
                 else
                     echo "INFO: starting $stage1_container ..."
                     docker start $stage1_container
-            fi
+                fi
             else
                 echo "INFO: create and run $stage1_container ..."
                 run_stage1_container
@@ -219,8 +219,122 @@ else
                 cat >> $TARGET_KICKSTART_FILE <<-WEOF
                 %include fedora-live-base.ks
                 %include fedora-workstation-common.ks
+				WEOF
+
+                command -v ksflatten >/dev/null 2>&1 || pip install pykickstart
+                ksflatten -c $TARGET_KICKSTART_FILE -o $TARGET_KICKSTART_FILE
+                sed -i '/^\(lang\|keyboard\|network\|rootpw\|firewall\|timezone\|selinux\|services\)/d' $TARGET_KICKSTART_FILE
+
+                cat >> $TARGET_KICKSTART_FILE <<-WEOF
+                text
+                #reboot
+                lang en_US.UTF-8
+                keyboard us
+                # short hostname still allows DHCP to assign domain name
+                network --bootproto dhcp --device=link --hostname=fedora-riscv --activate
+                rootpw --plaintext fedora_rocks!
+                firewall --enabled --ssh
+                timezone --utc Asia/Shanghai
+                selinux --disabled
+                services --enabled=sshd,NetworkManager,chronyd,haveged,lightdm --disabled=lm_sensors,libvirtd
+                # Halt the system once configuration has finished.
+                poweroff
+
                 %packages
+                @hardware-support
+                @buildsys-build
                 shadow-utils # for useradd action
+                kernel-core
+                kernel-devel
+                openssh
+                openssh-server
+                # No longer in @core since 2018-10, but needed for livesys script
+                initscripts
+                chkconfig
+                # Below packages are needed for creating disk images via koji-builder
+                livecd-tools
+                python-imgcreate-sysdeps
+                python3-imgcreate
+                python3-pyparted
+                isomd5sum
+                python3-isomd5sum
+                pykickstart
+                python3-kickstart
+                python3-ordered-set
+                appliance-tools
+                pycdio
+                qemu-img
+                nbdkit
+                nbd
+                # end of creating disk image packages list
+                %end
+
+                %post
+
+                dnf config-manager --set-disabled rawhide updates updates-testing fedora fedora-modular fedora-cisco-openh264 updates-modular updates-testing-modular rawhide-modular
+                dnf -y remove dracut-config-generic
+
+                # Create Fedora RISC-V repo
+                cat << EOF > /etc/yum.repos.d/fedora-riscv.repo
+                [fedora-riscv]
+                name=Fedora RISC-V
+                baseurl=http://fedora.riscv.rocks/repos-dist/f38/latest/riscv64/
+                #baseurl=https://dl.fedoraproject.org/pub/alt/risc-v/repo/fedora/f38/latest/riscv64/
+                #baseurl=https://mirror.math.princeton.edu/pub/alt/risc-v/repo/fedora/f38/latest/riscv64/
+                enabled=1
+                gpgcheck=0
+
+                [fedora-riscv-debuginfo]
+                name=Fedora RISC-V - Debug
+                baseurl=http://fedora.riscv.rocks/repos-dist/f38/latest/riscv64/debug/
+                #baseurl=https://dl.fedoraproject.org/pub/alt/risc-v/repo/fedora/f38/latest/riscv64/debug/
+                #baseurl=https://mirror.math.princeton.edu/pub/alt/risc-v/repo/fedora/f38/latest/riscv64/debug/
+                enabled=0
+                gpgcheck=0
+
+                [fedora-riscv-source]
+                name=Fedora RISC-V - Source
+                baseurl=http://fedora.riscv.rocks/repos-dist/f38/latest/src/
+                #baseurl=https://dl.fedoraproject.org/pub/alt/risc-v/repo/fedora/f38/latest/src/
+                #baseurl=https://mirror.math.princeton.edu/pub/alt/risc-v/repo/fedora/f38/latest/src/
+                enabled=0
+                gpgcheck=0
+                EOF
+
+                # Create Fedora RISC-V Koji repo
+                cat << EOF > /etc/yum.repos.d/fedora-riscv-koji.repo
+                [fedora-riscv-koji]
+                name=Fedora RISC-V Koji
+                baseurl=http://fedora.riscv.rocks/repos/f38-build/latest/riscv64/
+                enabled=0
+                gpgcheck=0
+                EOF
+
+                # systemd starts serial consoles on /dev/ttyS0 and /dev/hvc0.  The
+                # only problem is they are the same serial console.  Mask one.
+                systemctl mask serial-getty@hvc0.service
+
+                releasever=$(rpm --eval '%{fedora}')
+                rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-fedora-$releasever-primary
+
+                # systemd on no-SMP boots (i.e. single core) sometimes timeout waiting for storage
+                # devices. After entering emergency prompt all disk are mounted.
+                # For more information see:
+                # https://www.suse.com/support/kb/doc/?id=7018491
+                # https://www.freedesktop.org/software/systemd/man/systemd.mount.html
+                # https://github.com/systemd/systemd/issues/3446
+                # We modify /etc/fstab to give more time for device detection (the problematic part)
+                # and mounting processes. This should help on systems where boot takes longer.
+                sed -i 's|noatime|noatime,x-systemd.device-timeout=300s,x-systemd.mount-timeout=300s|g' /etc/fstab
+
+                # remove unnecessary entry in /etc/fstab
+
+                sed -i '/swap/d' /etc/fstab
+                sed -i '/efi/d' /etc/fstab
+
+                DTB_PATH=$(ls /boot | grep dtb)
+                wget https://github.com/starfive-tech/VisionFive2/releases/download/VF2_v3.8.2/jh7110-visionfive-v2.dtb -P /boot/\${DTB_PATH}/starfive
+
                 %end
 				WEOF
             fi
@@ -234,14 +348,56 @@ else
                 %post
                 cat > /etc/rc.d/init.d/livesys << EOF
                 #!/bin/bash
+                #
+                # live: Init script for live image
+                #
+                # chkconfig: 345 00 99
+                # description: Init script for live image.
+                ### BEGIN INIT INFO
+                # X-Start-Before: display-manager chronyd
+                ### END INIT INFO
+
                 . /etc/rc.d/init.d/functions
+
                 useradd -c "Fedora RISCV User" $INPUT_USER
                 echo $INPUT_PASSWD | passwd --stdin $INPUT_USER > /dev/null
+
                 exit 0
                 EOF
+
                 chmod 755 /etc/rc.d/init.d/livesys
                 /sbin/restorecon /etc/rc.d/init.d/livesys
                 /sbin/chkconfig --add livesys
+
+                # setup login message
+                cat << EOF | tee /etc/issue /etc/issue.net
+                Welcome to the Fedora/RISC-V disk image
+                https://fedoraproject.org/wiki/Architectures/RISC-V
+
+                Build date: $(date --utc)
+
+                Kernel \r on an \m (\l)
+
+                The root password is 'fedora_rocks!'.
+                root password logins are disabled in SSH starting Fedora 38.
+                User '$INPUT_USER' with password '$INPUT_PASSWD' is provided.
+
+                To install new packages use 'dnf install ...'
+
+                To upgrade disk image use 'dnf upgrade --best'
+
+                If DNS isn’t working, try editing ‘/etc/yum.repos.d/fedora-riscv.repo’.
+
+                For updates and latest information read:
+                https://fedoraproject.org/wiki/Architectures/RISC-V
+
+                Fedora/RISC-V
+                -------------
+                Koji:               http://fedora.riscv.rocks/koji/
+                SCM:                http://fedora.riscv.rocks:3000/
+                Distribution rep.:  http://fedora.riscv.rocks/repos-dist/
+                Koji internal rep.: http://fedora.riscv.rocks/repos/
+                EOF
                 %end
 				WEOF
             fi
@@ -259,6 +415,9 @@ else
             if [[ $TARGET_DESKTOP_TYPE == *1* ]]; then
                 cat >> $TARGET_KICKSTART_FILE <<-WEOF
                 %include fedora-xfce-common.ks
+                %packages
+                @base-x
+                %end
                 %post
                 cat > /etc/sysconfig/desktop <<EOF
                 PREFERRED=/usr/bin/startxfce4
@@ -436,6 +595,7 @@ else
             if [[ $TARGET_DEVELOP_TYPE == *1* ]]; then
                 cat >> $TARGET_KICKSTART_FILE <<-WEOF
                 %packages
+                @c-development
                 @development-libs
                 @development-tools
                 glibc-devel
@@ -526,11 +686,7 @@ else
             fi
             sed -i 's/^[ \t]*//' $TARGET_KICKSTART_FILE
 
-            if command -v ksflatten >/dev/null 2>&1; then
-                echo "ksflatten is installed."
-            else
-                pip install pykickstart
-            fi
+            command -v ksflatten >/dev/null 2>&1 || pip install pykickstart
             ksflatten -c $TARGET_KICKSTART_FILE -o $TARGET_KICKSTART_FILE
             #######################################################################################################
             echo "$(tput setaf 2)> Which Type of Bootloader do you prefer?$(tput sgr0)"
@@ -543,14 +699,24 @@ else
                 cat >> $TARGET_KICKSTART_FILE <<-WEOF
                 zerombr
                 clearpart --all --initlabel --disklabel=gpt
-                part /boot --size=512 --fstype vfat
-                part / --fstype="ext4" --size=9216
-                bootloader --location=none --extlinux --append="console=tty1 console=ttyS0,115200 debug rootwait earlycon=sbi"
+                part /boot --size=512 --fstype vfat --asprimary
+                part / --fstype="ext4" --size=12288
+                bootloader --location=none --extlinux --append="root=/dev/mmcblk1p4 rw console=tty0 console=ttyS0,115200 earlycon rootwait selinux=0"
                 %packages
                 extlinux-bootloader
                 linux-firmware
                 uboot-tools
                 uboot-images-riscv64
+                dracut-config-generic
+                -dracut-config-rescue
+                %end
+                %post
+                sed -i \
+                -e 's/^ui/# ui/g'	\
+                -e 's/^menu autoboot/# menu autoboot/g'	\
+                -e 's/^menu hidden/# menu hidden/g'	\
+                -e 's/^totaltimeout/# totaltimeout/g'	\
+                /boot/extlinux/extlinux.conf
                 %end
 				WEOF
             fi
@@ -558,18 +724,11 @@ else
             if [ $TARGET_BOOTLOADER_TYPE = "1" ]; then
                 cat >> $TARGET_KICKSTART_FILE <<-WEOF
 
-                # zerombr
-                # clearpart --all --initlabel --disklabel=gpt
-                # part /boot/efi --fstype=vfat --size=100
-                # part / --fstype=ext4 --size=10240 --label=rootfs --grow
-                # bootloader --location=none --timeout=1 --append="console=tty1 console=ttyS0,115200 debug rootwait earlycon=sbi"
-
-                ignoredisk --only-use=sda
-                clearpart --all --initlabel --disklabel=gpt --drives=sda
-                part /boot/efi --size=100 --fstype=efi --label=efi
-                part /boot     --size=500 --fstype=ext4 --label=boot
-                part /         --size=10240 --fstype=ext4 --label=root --grow
-                bootloader --location=none --timeout=1 --append="console=tty1 console=ttyS0,115200 debug rootwait earlycon=sbi"
+                zerombr
+                clearpart --all --initlabel --disklabel=gpt
+                part /boot/efi --fstype=vfat --size=100
+                part / --fstype=ext4 --size=12288 --label=rootfs --grow
+                bootloader --location=none --timeout=1 --append="root=/dev/mmcblk1p4 rw console=tty0 console=ttyS0,115200 earlycon rootwait selinux=0"
 
                 %packages
                 @core
@@ -701,6 +860,6 @@ else
     else
         docker cp $STAGE2_CONTAINER:/home/riscv/mock_root_dir/builddir/images/$SELECTED_KICKSTART_NAME/${SELECTED_KICKSTART_NAME}-sda.raw.xz ./output
     fi
-    docker cp $STAGE2_CONTAINER:/home/riscv/mock_root_dir/root.log ./output
+    docker cp $STAGE2_CONTAINER:/home/riscv/mock_result_dir/root.log ./output
     docker stop $STAGE2_CONTAINER
 fi
