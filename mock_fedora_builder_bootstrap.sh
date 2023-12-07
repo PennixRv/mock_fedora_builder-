@@ -334,7 +334,24 @@ else
 
                 DTB_PATH=$(ls /boot | grep dtb)
                 wget https://github.com/starfive-tech/VisionFive2/releases/download/VF2_v3.8.2/jh7110-visionfive-v2.dtb -P /boot/\${DTB_PATH}/starfive
+                cp -r /boot/\${DTB_PATH} /boot/dtbs
 
+                cat >> /boot/vf2_uEnv.txt <<REALEND
+                boot2=echo "HELLO RIVAI!"
+                fdt_high=0xffffffffffffffff
+                initrd_high=0xffffffffffffffff
+                kernel_addr_r=0x44000000
+                kernel_comp_addr_r=0x90000000
+                kernel_comp_size=0x10000000
+                fdt_addr_r=0x48000000
+                ramdisk_addr_r=0x48100000
+                # Move distro to first boot to speed up booting
+                boot_targets=distro mmc0 dhcp
+                # Fix wrong fdtfile name
+                fdtfile=starfive/jh7110-visionfive-v2.dtb
+                # Fix missing bootcmd
+                bootcmd=run load_distro_uenv;run bootcmd_distro
+                REALEND
                 %end
 				WEOF
             fi
