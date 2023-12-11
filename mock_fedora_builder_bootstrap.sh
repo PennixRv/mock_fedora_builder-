@@ -422,11 +422,7 @@ else
             printf "$(tput setaf 2)> Do you need a desktop environment, and if so, which one below is your favorite? \
                     \n  (You could have more than one of them with typing like '123')$(tput sgr0)\n"
             echo "  0. DO NOT NEED a desktop"
-            echo "  1. xfce"
-            echo "  2. kde"
-            echo "  3. gnome"
-            echo "  4. lxde"
-            echo "  5. lxqt"
+            echo "  1. xfce    2. kde     3. gnome    4. lxde    5. lxqt"
             read TARGET_DESKTOP_TYPE
 
             if [[ $TARGET_DESKTOP_TYPE == *1* ]]; then
@@ -604,10 +600,7 @@ else
             printf "$(tput setaf 2)> Do you need a development environment for programming languages pre-installed in the system image?  \
                     \n  (Warning: this can significantly increase the size of the package)$(tput sgr0)\n"
             echo "  0. DO NOT NEED Any of them"
-            echo "  1. C/C++"
-            echo "  2. Java"
-            echo "  3. go"
-            echo "  4. Rust"
+            echo "  1. C/C++    2. Java    3. go    4. Rust"
             read TARGET_DEVELOP_TYPE
             if [[ $TARGET_DEVELOP_TYPE == *1* ]]; then
                 cat >> $TARGET_KICKSTART_FILE <<-WEOF
@@ -718,7 +711,7 @@ else
                 clearpart --all --initlabel --disklabel=gpt
                 part /boot --size=512 --fstype vfat --asprimary
                 part / --fstype="ext4" --size=12288
-                bootloader --location=none --extlinux --append="root=/dev/mmcblk1p4 rw console=tty0 console=ttyS0,115200 earlycon rootwait selinux=0"
+                bootloader --location=none --extlinux --append="console=tty0 console=ttyS0,115200 earlycon rootwait selinux=0"
                 %packages
                 extlinux-bootloader
                 linux-firmware
@@ -745,7 +738,7 @@ else
                 clearpart --all --initlabel --disklabel=gpt
                 part /boot/efi --fstype=vfat --size=100
                 part / --fstype=ext4 --size=12288 --label=rootfs --grow
-                bootloader --location=none --timeout=1 --append="root=/dev/mmcblk1p4 rw console=tty0 console=ttyS0,115200 earlycon rootwait selinux=0"
+                bootloader --location=none --timeout=1 --append="console=tty0 console=ttyS0,115200 earlycon rootwait selinux=0"
 
                 %packages
                 @core
