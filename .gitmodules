@@ -1,0 +1,6 @@
+[submodule "fedora-kickstarts"]
+	path = fedora-kickstarts
+	url = https://pagure.io/fedora-kickstarts.git
+[submodule "preconfigured"]
+	path = preconfigured
+	url = http://fedora.riscv.rocks:3000/davidlt/fedora-riscv-kickstarts.git
