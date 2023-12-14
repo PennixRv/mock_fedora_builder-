@@ -348,11 +348,11 @@ else
                 mv -vf boot/vf2_uEnv.txt /boot
                 mv -vf boot/extlinux.conf /boot/extlinux/extlinux.conf
                 rm -rf boot
-                ROOT_UUID=`grep ' / ' /etc/fstab | awk '{printf $1}' | sed -e 's/^UUID=//g'`
-                sed -i -e "s/@@ROOTUUID@@/${ROOT_UUID}/g"   \
+                ROOT_UUID=\$(grep ' / ' /etc/fstab | awk '{printf \$1}' | sed -e 's/^UUID=//g')
+                sed -i -e "s/@@ROOTUUID@@/\${ROOT_UUID}/g"   \
                     /boot/extlinux/extlinux.conf
                 popd
-
+                %end
 				WEOF
             fi
             #######################################################################################################
