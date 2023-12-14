@@ -845,25 +845,25 @@ else
             "
             cd /home/riscv/mock_root_dir/images && \
             unxz ${SELECTED_KICKSTART_NAME}-sda.raw.xz && \
-            wget https://github.com/starfive-tech/VisionFive2/releases/download/VF2_v3.8.2/u-boot-spl.bin.normal.out && \
-            wget https://github.com/starfive-tech/VisionFive2/releases/download/VF2_v3.8.2/visionfive2_fw_payload.img && \
-            dd if=/dev/zero of=${SELECTED_KICKSTART_NAME}-vf2-bootable-sda.img bs=1M count=10240 && \
-            sudo sgdisk -g --clear --set-alignment=1 																				\
-	            --new=1:4096:+2M: 		--change-name=1:'spl' 				--typecode=1:2E54B353-1271-4842-806F-E436D6AF6985 		\
-	            --new=2:8192:+4M: 		--change-name=2:'opensbi-uboot' 	--typecode=2:5b193300-fc78-40cd-8002-e86c45580b47 		\
-	            --new=3:16384:+100M: 	--change-name=3:'efi'		   		--typecode=3:C12A7328-F81F-11D2-BA4B-00A0C93EC93B  		\
-	            --new=4:221184:-0   	--change-name=4:'rootfs'       		--typecode=4:0FC63DAF-8483-4772-8E79-3D69D8477DE4 		\
-	            ${SELECTED_KICKSTART_NAME}-vf2-bootable-sda.img && \
-            BOOTABLE_DEV_NUM=$(echo $(sudo losetup --partscan --find --show ${SELECTED_KICKSTART_NAME}-vf2-bootable-sda.img) | grep -oP '/dev/loop\K\d+') && \
-            sudo mkfs.vfat /dev/loop\${BOOTABLE_DEV_NUM}p3 && \
-            sudo mkfs.ext4 /dev/loop\${BOOTABLE_DEV_NUM}p4 && \
-            sudo fatlabel /dev/loop\${BOOTABLE_DEV_NUM}p3 BOOT && \
-            sudo e2label /dev/loop$\{BOOTABLE_DEV_NUM}p4 ROOTFS && \
-            RAW_DEV_NUM=\$(echo \$(sudo losetup --partscan --find --show ${SELECTED_KICKSTART_NAME}-sda.raw) | grep -oP '/dev/loop\K\d+') && \
-            sudo dd if=u-boot-spl.bin.normal.out of=/dev/loop\${BOOTABLE_DEV_NUM}p1 bs=64k iflag=fullblock oflag=direct conv=fsync status=progress && \
-            sudo dd if=visionfive2_fw_payload.img of=/dev/loop\${BOOTABLE_DEV_NUM}p2 bs=64k iflag=fullblock oflag=direct conv=fsync status=progress && \
-            sudo dd if=/dev/loop\${RAW_DEV_NUM}p1 of=/dev/loop\${BOOTABLE_DEV_NUM}p3 bs=64k iflag=fullblock oflag=direct conv=fsync status=progress && \
-            sudo dd if=/dev/loop\${RAW_DEV_NUM}p2 of=/dev/loop\${BOOTABLE_DEV_NUM}p4 bs=64k iflag=fullblock oflag=direct conv=fsync status=progress && \
+            wget https://github.com/starfive-tech/VisionFive2/releases/download/JH7110_VF2_515_v3.9.3/u-boot-spl.bin.normal.out &&      \
+            wget https://github.com/starfive-tech/VisionFive2/releases/download/JH7110_VF2_515_v3.9.3/visionfive2_fw_payload.img &&     \
+            dd if=/dev/zero of=${SELECTED_KICKSTART_NAME}-vf2-bootable-sda.img bs=1M count=13312 &&                                     \
+            sudo sgdisk -g --clear --set-alignment=1 																				    \
+	                --new=1:4096:+2M:         --change-name=1:'u-boot_spl'     --typecode=1:2E54B353-1271-4842-806F-E436D6AF6985        \
+                    --new=2:8192:+4M:         --change-name=2:'opensbi-uboot'  --typecode=2:5B193300-FC78-40CD-8002-E86C45580B47        \
+                    --new=3:16384:+500M:      --change-name=3:'boot'           --typecode=3:C12A7328-F81F-11D2-BA4B-00A0C93EC93B        \
+                    --new=4:1040384:-0        --change-name=4:'rootfs'         --typecode=4:0FC63DAF-8483-4772-8E79-3D69D8477DE4        \
+	            ${SELECTED_KICKSTART_NAME}-vf2-bootable-sda.img &&                                                                      \
+            BOOTABLE_DEV_NUM=\$(echo \$(sudo losetup --partscan --find --show ${SELECTED_KICKSTART_NAME}-vf2-bootable-sda.img) | grep -oP '/dev/loop\K\d+') && \
+            sudo mkfs.vfat /dev/loop\${BOOTABLE_DEV_NUM}p3 &&       \
+            sudo mkfs.ext4 /dev/loop\${BOOTABLE_DEV_NUM}p4 &&       \
+            sudo fatlabel /dev/loop\${BOOTABLE_DEV_NUM}p3 BOOT &&   \
+            sudo e2label /dev/loop$\{BOOTABLE_DEV_NUM}p4 ROOTFS &&  \
+            RAW_DEV_NUM=\$(echo \$(sudo losetup --partscan --find --show ${SELECTED_KICKSTART_NAME}-sda.raw) | grep -oP '/dev/loop\K\d+') &&            \
+            sudo dd if=u-boot-spl.bin.normal.out  of=/dev/loop\${BOOTABLE_DEV_NUM}p1 bs=64k iflag=fullblock oflag=direct conv=fsync status=progress &&  \
+            sudo dd if=visionfive2_fw_payload.img of=/dev/loop\${BOOTABLE_DEV_NUM}p2 bs=64k iflag=fullblock oflag=direct conv=fsync status=progress &&  \
+            sudo dd if=/dev/loop\${RAW_DEV_NUM}p1 of=/dev/loop\${BOOTABLE_DEV_NUM}p3 bs=64k iflag=fullblock oflag=direct conv=fsync status=progress &&  \
+            sudo dd if=/dev/loop\${RAW_DEV_NUM}p2 of=/dev/loop\${BOOTABLE_DEV_NUM}p4 bs=64k iflag=fullblock oflag=direct conv=fsync status=progress &&  \
             sudo losetup -d /dev/loop\${BOOTABLE_DEV_NUM} && \
             sudo losetup -d /dev/loop\${RAW_DEV_NUM}
             "
