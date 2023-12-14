@@ -246,6 +246,7 @@ else
                 shadow-utils
                 kernel-core
                 kernel-devel
+                neofetch
                 openssh
                 openssh-server
                 # No longer in @core since 2018-10, but needed for livesys script
@@ -292,12 +293,10 @@ else
                 enabled=0
                 gpgcheck=0
 
-                [fedora-riscv-source]
+                [fedora-riscv-openkoji]
                 name=Fedora RISC-V - Source
-                baseurl=http://fedora.riscv.rocks/repos-dist/f38/latest/src/
-                #baseurl=https://dl.fedoraproject.org/pub/alt/risc-v/repo/fedora/f38/latest/src/
-                #baseurl=https://mirror.math.princeton.edu/pub/alt/risc-v/repo/fedora/f38/latest/src/
-                enabled=0
+                baseurl=http://openkoji.iscas.ac.cn/repos/rocks-f38-latest-mirror/fedora.riscv.rocks/kojifiles/repos-dist/f38/latest/riscv64/
+                enabled=1
                 gpgcheck=0
                 EOF
 
@@ -349,6 +348,22 @@ else
                 bootcmd=run load_distro_uenv;run bootcmd_distro
                 REALEND
                 %end
+
+                pushd /tmp
+
+                /usr/bin/wget -P boot "https://mirror.ghproxy.com/https://raw.githubusercontent.com/PennixRv/mock_fedora_builder/main/prebuild/vf2_kernel_pack_6.1.31.tar.xz.0"
+                /usr/bin/wget -P boot "https://mirror.ghproxy.com/https://raw.githubusercontent.com/PennixRv/mock_fedora_builder/main/prebuild/vf2_kernel_pack_6.1.31.tar.xz.1"
+                /usr/bin/wget -P boot "https://mirror.ghproxy.com/https://raw.githubusercontent.com/PennixRv/mock_fedora_builder/main/prebuild/vf2_kernel_pack_6.1.31.tar.xz.2"
+
+                pushd boot
+                cat vf2_kernel_pack_6.1.31.tar.xz.* | tar -xJv
+                tar xJvf 6.1.31.tar.xz
+                popd
+
+                
+
+                popd
+
 				WEOF
             fi
             #######################################################################################################
