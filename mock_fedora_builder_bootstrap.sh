@@ -243,7 +243,7 @@ else
                 %packages
                 @hardware-support
                 @buildsys-build
-                shadow-utils # for useradd action
+                shadow-utils
                 kernel-core
                 kernel-devel
                 openssh
@@ -332,10 +332,6 @@ else
                 sed -i '/swap/d' /etc/fstab
                 sed -i '/efi/d' /etc/fstab
 
-                DTB_PATH=$(ls /boot | grep dtb)
-                wget https://github.com/starfive-tech/VisionFive2/releases/download/VF2_v3.8.2/jh7110-visionfive-v2.dtb -P /boot/\${DTB_PATH}/starfive
-                cp -r /boot/\${DTB_PATH} /boot/dtbs
-
                 cat >> /boot/vf2_uEnv.txt <<REALEND
                 boot2=echo "HELLO RIVAI!"
                 fdt_high=0xffffffffffffffff
@@ -378,6 +374,7 @@ else
 
                 useradd -c "Fedora RISCV User" $INPUT_USER
                 echo $INPUT_PASSWD | passwd --stdin $INPUT_USER > /dev/null
+                echo "$INPUT_USER     ALL=(ALL)     NOPASSWD: ALL" >> /etc/sudoers
 
                 exit 0
                 EOF
@@ -786,7 +783,7 @@ else
 
             sed -i 's/^[ \t]*//' $TARGET_KICKSTART_FILE
             ksflatten -c $TARGET_KICKSTART_FILE -o $TARGET_KICKSTART_FILE
-            cp $TARGET_KICKSTART_FILE ./preconfigured
+            cp $TARGET_KICKSTART_FILE ./preconfigured/new_${TARGET_KICKSTART_FILE}
         ;;
         3) echo "customized"
         ;;
