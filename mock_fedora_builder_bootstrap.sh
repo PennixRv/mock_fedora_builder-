@@ -365,6 +365,8 @@ else
                 cat vf2_kernel_pack_6.1.31.tar.xz.* | tar -xJv
                 tar xJvf 6.1.31.tar.xz
                 popd
+                sudo rm -rf /boot/*
+                sudo rm -rf /lib/modules/*
                 sudo mv -vf boot/6.1.31 /lib/modules/
                 sudo mv -vf boot/Image.gz /boot
                 sudo mv -vf boot/initramfs.cpio.gz /boot
