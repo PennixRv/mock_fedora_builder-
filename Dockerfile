@@ -13,7 +13,8 @@ RUN if [ "${proxy_ipv4}" != "0.0.0.0" ]; then \
         echo "proxy=http://${proxy_ipv4}:${proxy_port}" >> /etc/dnf/dnf.conf; \
     fi && \
     dnf update -y && \
-	dnf install -y util-linux mock wget qemu-system-riscv git vim qemu-user-static && \
+	dnf install -y util-linux mock qemu-system-riscv git vim qemu-user-static \
+                wget gdisk dosfstools e2fsprogs util-linux-core && \
 	adduser riscv && \
 	echo "riscv ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers && \
 	usermod -aG root riscv && \

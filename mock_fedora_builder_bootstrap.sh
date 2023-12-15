@@ -371,6 +371,7 @@ else
                 sudo mkdir -p /boot/dtbs/starfive
                 sudo mv -vf boot/jh7110-visionfive-v2.dtb /boot/dtbs/starfive
                 sudo mv -vf boot/vf2_uEnv.txt /boot
+                sudo mkdir -p /boot/extlinux/
                 sudo mv -vf boot/extlinux.conf /boot/extlinux/extlinux.conf
                 sudo rm -rf boot
                 ROOT_UUID=\$(grep ' / ' /etc/fstab | awk '{printf \$1}' | sed -e 's/^UUID=//g')
@@ -859,8 +860,9 @@ else
             \"
                 sed -i '/MountError(umount_fail_fmt/d' /usr/lib/python3.11/site-packages/imgcreate/fs.py && \
                 sed -i 's/grub2-efi-aa64/grub2-efi-riscv64/g' /usr/lib/python3.11/site-packages/appcreate/appliance.py && \
-                cd /builddir && appliance-creator -c ./${SELECTED_KICKSTART_NAME}.ks --cache ./cache -o ./images --format raw \
-                    --name $SELECTED_KICKSTART_NAME --vcpu=20 --vmem=10240 --version f38 --release \`date +%Y%m%d-%H%M%S\`
+                cd /builddir && [ ! -f "images/${SELECTED_KICKSTART_NAME}/${SELECTED_KICKSTART_NAME}-sda.raw.xz" ] && \
+                    appliance-creator -c ./${SELECTED_KICKSTART_NAME}.ks --cache ./cache -o ./images --format raw \
+                    --name $SELECTED_KICKSTART_NAME --vcpu=20 --vmem=10240 --version f38 --release \$(date +%Y%m%d-%H%M%S)
             \"
         "
     mkdir -p output
@@ -868,8 +870,8 @@ else
     if [ "$TARGET_IMAGE_TYPE" = "1" ]; then
         docker exec $STAGE2_CONTAINER bash -c \
             "
-            cd /home/riscv/mock_root_dir/images && \
-            unxz ${SELECTED_KICKSTART_NAME}-sda.raw.xz && \
+            cd /home/riscv/mock_root_dir/builddir/images/${SELECTED_KICKSTART_NAME} && \
+            unxz -k ${SELECTED_KICKSTART_NAME}-sda.raw.xz && \
             wget https://github.com/starfive-tech/VisionFive2/releases/download/JH7110_VF2_515_v3.9.3/u-boot-spl.bin.normal.out &&      \
             wget https://github.com/starfive-tech/VisionFive2/releases/download/JH7110_VF2_515_v3.9.3/visionfive2_fw_payload.img &&     \
             dd if=/dev/zero of=${SELECTED_KICKSTART_NAME}-vf2-bootable-sda.img bs=1M count=13312 &&                                     \
