@@ -233,7 +233,7 @@ else
                 # short hostname still allows DHCP to assign domain name
                 network --bootproto dhcp --device=link --hostname=fedora-riscv --activate
                 rootpw --plaintext fedora_rocks!
-                firewall --enabled --ssh
+                firewall --enabled --service=mdns,ssh,dns,https
                 timezone --utc Asia/Shanghai
                 selinux --disabled
                 services --enabled=sshd,NetworkManager,chronyd,haveged,lightdm --disabled=lm_sensors,libvirtd
@@ -243,10 +243,12 @@ else
                 %packages
                 @hardware-support
                 @buildsys-build
+                @dns-server
                 shadow-utils
                 kernel-core
                 kernel-devel
                 neofetch
+                dnscrypt-proxy
                 openssh
                 openssh-server
                 # No longer in @core since 2018-10, but needed for livesys script
@@ -271,6 +273,27 @@ else
                 %end
 
                 %post
+
+                systemctl enable sshd
+                systemctl enable systemd-networkd
+                systemctl enable systemd-resolved
+                # Configure DNS lookups to go through systemd-resolved
+                ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf
+
+                ### Add dns server configuration
+                echo "===]> Info: Printing PWD"
+                pwds
+                echo "===]> Info: Printing /etc/resolv.conf"
+                cat /etc/resolv.conf
+                echo "===]> Info: Listing /etc/resolv.conf"
+                ls -la /etc/resolv.conf
+                echo "===]> Info: Renaming default /etc/resolv.conf"
+                mv /etc/resolv.conf /etc/resolv.conf_backup
+                echo "===]> Info: Add Google DNS to /etc/resolv.conf"
+                echo 'nameserver 8.8.8.8' > /etc/resolv.conf
+                echo "===]> Info: Print /etc/resolv.conf"
+                cat /etc/resolv.conf
+
 
                 dnf config-manager --set-disabled rawhide updates updates-testing fedora fedora-modular fedora-cisco-openh264 updates-modular updates-testing-modular rawhide-modular
                 dnf -y remove dracut-config-generic
