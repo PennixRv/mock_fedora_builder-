@@ -294,6 +294,7 @@ else
                 echo "===]> Info: Print /etc/resolv.conf"
                 cat /etc/resolv.conf
 
+                systemctl restart systemd-resolved
 
                 dnf config-manager --set-disabled rawhide updates updates-testing fedora fedora-modular fedora-cisco-openh264 updates-modular updates-testing-modular rawhide-modular
                 dnf -y remove dracut-config-generic
