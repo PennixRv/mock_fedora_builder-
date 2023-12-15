@@ -244,6 +244,7 @@ else
                 @hardware-support
                 @buildsys-build
                 @dns-server
+                sudo
                 shadow-utils
                 kernel-core
                 kernel-devel
@@ -282,7 +283,6 @@ else
 
                 ### Add dns server configuration
                 echo "===]> Info: Printing PWD"
-                pwds
                 echo "===]> Info: Printing /etc/resolv.conf"
                 cat /etc/resolv.conf
                 echo "===]> Info: Listing /etc/resolv.conf"
@@ -291,6 +291,7 @@ else
                 mv /etc/resolv.conf /etc/resolv.conf_backup
                 echo "===]> Info: Add Google DNS to /etc/resolv.conf"
                 echo 'nameserver 8.8.8.8' > /etc/resolv.conf
+                echo 'nameserver 8.8.4.4' >> /etc/resolv.conf
                 echo "===]> Info: Print /etc/resolv.conf"
                 cat /etc/resolv.conf
 
@@ -364,16 +365,16 @@ else
                 cat vf2_kernel_pack_6.1.31.tar.xz.* | tar -xJv
                 tar xJvf 6.1.31.tar.xz
                 popd
-                mv -vf boot/6.1.31 /lib/modules/
-                mv -vf boot/Image.gz /boot
-                mv -vf boot/initramfs.cpio.gz /boot
-                mkdir /boot/dtbs/starfive
-                mv -vf boot/jh7110-visionfive-v2.dtb /boot/dtbs/starfive
-                mv -vf boot/vf2_uEnv.txt /boot
-                mv -vf boot/extlinux.conf /boot/extlinux/extlinux.conf
-                rm -rf boot
+                sudo mv -vf boot/6.1.31 /lib/modules/
+                sudo mv -vf boot/Image.gz /boot
+                sudo mv -vf boot/initramfs.cpio.gz /boot
+                sudo mkdir -p /boot/dtbs/starfive
+                sudo mv -vf boot/jh7110-visionfive-v2.dtb /boot/dtbs/starfive
+                sudo mv -vf boot/vf2_uEnv.txt /boot
+                sudo mv -vf boot/extlinux.conf /boot/extlinux/extlinux.conf
+                sudo rm -rf boot
                 ROOT_UUID=\$(grep ' / ' /etc/fstab | awk '{printf \$1}' | sed -e 's/^UUID=//g')
-                sed -i -e "s/@@ROOTUUID@@/\${ROOT_UUID}/g"   \
+                sudo sed -i -e "s/@@ROOTUUID@@/\${ROOT_UUID}/g"   \
                     /boot/extlinux/extlinux.conf
                 popd
                 %end
