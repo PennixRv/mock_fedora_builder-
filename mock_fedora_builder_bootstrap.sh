@@ -271,6 +271,12 @@ else
                 nbdkit
                 nbd
                 # end of creating disk image packages list
+                # below packages are needed for creating jira envirionment
+                java-11-openjdk
+                java-17-openjdk
+                java-1.8.0-openjdk
+                community-mysql-server
+                # end of jira envirionment
                 %end
 
                 %post
@@ -337,6 +343,8 @@ else
                 # systemd starts serial consoles on /dev/ttyS0 and /dev/hvc0.  The
                 # only problem is they are the same serial console.  Mask one.
                 systemctl mask serial-getty@hvc0.service
+
+                sudo systemctl enable mysqld
 
                 releasever=$(rpm --eval '%{fedora}')
                 rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-fedora-$releasever-primary
@@ -903,6 +911,7 @@ else
         sudo losetup -d /dev/loop${BOOTABLE_DEV_NUM} && \
         sudo losetup -d /dev/loop${RAW_DEV_NUM}
         popd
+        sudo dd if=${SELECTED_KICKSTART_NAME}-vf2-bootable-sda.img of=/dev/sdb bs=64k iflag=fullblock oflag=direct conv=fsync status=progress
 
         # read -p "$(tput setaf 2)> Are you willing to flash the bootable image to your plugged usb device (WARN: WILL CLEAR ALL THE DATA ON YOUR DEVICE)? (y/n): $(tput sgr0)" PREFER_FLASH
         # if [ "$PREFER_FLASH" = "y" -o "$PREFER_FLASH" = "" ]; then
