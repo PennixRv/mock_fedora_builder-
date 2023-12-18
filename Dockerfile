@@ -14,7 +14,7 @@ RUN if [ "${proxy_ipv4}" != "0.0.0.0" ]; then \
     fi && \
     dnf update -y && \
 	dnf install -y util-linux mock qemu-system-riscv git vim qemu-user-static \
-                wget gdisk dosfstools e2fsprogs util-linux-core xz && \
+                wget gdisk dosfstools e2fsprogs util-linux-core xz kpartx && \
 	adduser riscv && \
 	echo "riscv ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers && \
 	usermod -aG root riscv && \
