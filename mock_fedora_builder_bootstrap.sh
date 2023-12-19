@@ -272,10 +272,10 @@ else
                 nbd
                 # end of creating disk image packages list
                 # below packages are needed for creating jira envirionment
-                java-11-openjdk
                 java-17-openjdk
                 java-1.8.0-openjdk
-                community-mysql-server
+                mariadb
+                mariadb-server
                 # end of jira envirionment
                 %end
 
@@ -339,6 +339,16 @@ else
                 enabled=0
                 gpgcheck=0
                 EOF
+
+                ## repo
+                # disable wrong software repo
+                sudo dnf config-manager --set-disabled fedora
+                sudo dnf config-manager --set-disabled fedora-cisco-openh264
+                sudo dnf config-manager --set-disabled fedora-modular
+                sudo dnf config-manager --set-disabled updates
+                sudo dnf config-manager --set-disabled updates-modular
+                sudo dnf update -y
+                ## repo
 
                 # systemd starts serial consoles on /dev/ttyS0 and /dev/hvc0.  The
                 # only problem is they are the same serial console.  Mask one.
@@ -906,12 +916,12 @@ else
         RAW_DEV_NUM=$(echo $(sudo losetup --partscan --find --show ${SELECTED_KICKSTART_NAME}-sda.raw) | grep -oP '/dev/loop\K\d+') && \
         sudo dd if=u-boot-spl.bin.normal.out  of=/dev/loop${BOOTABLE_DEV_NUM}p1 bs=64k iflag=fullblock oflag=direct conv=fsync status=progress &&  \
         sudo dd if=visionfive2_fw_payload.img of=/dev/loop${BOOTABLE_DEV_NUM}p2 bs=64k iflag=fullblock oflag=direct conv=fsync status=progress &&  \
-        sudo dd if=/dev/loop${RAW_DEV_NUM}p1 of=/dev/loop${BOOTABLE_DEV_NUM}p3 bs=64k iflag=fullblock oflag=direct conv=fsync status=progress &&  \
-        sudo dd if=/dev/loop${RAW_DEV_NUM}p2 of=/dev/loop${BOOTABLE_DEV_NUM}p4 bs=64k iflag=fullblock oflag=direct conv=fsync status=progress &&  \
+        sudo dd if=/dev/loop${RAW_DEV_NUM}p1  of=/dev/loop${BOOTABLE_DEV_NUM}p3 bs=64k iflag=fullblock oflag=direct conv=fsync status=progress &&  \
+        sudo dd if=/dev/loop${RAW_DEV_NUM}p2  of=/dev/loop${BOOTABLE_DEV_NUM}p4 bs=64k iflag=fullblock oflag=direct conv=fsync status=progress &&  \
         sudo losetup -d /dev/loop${BOOTABLE_DEV_NUM} && \
         sudo losetup -d /dev/loop${RAW_DEV_NUM}
-        popd
         sudo dd if=${SELECTED_KICKSTART_NAME}-vf2-bootable-sda.img of=/dev/sdb bs=64k iflag=fullblock oflag=direct conv=fsync status=progress
+        popd
 
         # read -p "$(tput setaf 2)> Are you willing to flash the bootable image to your plugged usb device (WARN: WILL CLEAR ALL THE DATA ON YOUR DEVICE)? (y/n): $(tput sgr0)" PREFER_FLASH
         # if [ "$PREFER_FLASH" = "y" -o "$PREFER_FLASH" = "" ]; then
