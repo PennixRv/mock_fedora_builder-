@@ -276,6 +276,7 @@ else
                 java-1.8.0-openjdk
                 mariadb
                 mariadb-server
+                mariadb-connector-odbc
                 # end of jira envirionment
                 %end
 
@@ -383,7 +384,8 @@ else
                 cat vf2_kernel_pack_6.1.31.tar.xz.* | tar -xJv
                 tar xJvf 6.1.31.tar.xz
                 popd
-                sudo rm -rf /boot/{*,.*}
+                sudo rm -rf /boot/*
+                sudo rm -rf /boot/.*
                 sudo rm -rf /lib/modules/*
                 sudo mv -vf boot/6.1.31 /lib/modules/
                 sudo mv -vf boot/Image.gz /boot
@@ -920,7 +922,7 @@ else
         sudo dd if=/dev/loop${RAW_DEV_NUM}p2  of=/dev/loop${BOOTABLE_DEV_NUM}p4 bs=64k iflag=fullblock oflag=direct conv=fsync status=progress &&  \
         sudo losetup -d /dev/loop${BOOTABLE_DEV_NUM} && \
         sudo losetup -d /dev/loop${RAW_DEV_NUM}
-        sudo dd if=${SELECTED_KICKSTART_NAME}-vf2-bootable-sda.img of=/dev/sdb bs=64k iflag=fullblock oflag=direct conv=fsync status=progress
+        # sudo dd if=${SELECTED_KICKSTART_NAME}-vf2-bootable-sda.img of=/dev/sdb bs=64k iflag=fullblock oflag=direct conv=fsync status=progress
         popd
 
         # read -p "$(tput setaf 2)> Are you willing to flash the bootable image to your plugged usb device (WARN: WILL CLEAR ALL THE DATA ON YOUR DEVICE)? (y/n): $(tput sgr0)" PREFER_FLASH
