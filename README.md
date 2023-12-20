@@ -26,7 +26,7 @@ psql                                             # enter psql shell
 postgres=# CREATE USER rivai WITH PASSWORD 'rivai';
 postgres=# CREATE DATABASE rivai_jiradb WITH ENCODING 'UNICODE' LC_COLLATE 'C' LC_CTYPE 'C' TEMPLATE template0;
 postgres=# GRANT ALL PRIVILEGES ON DATABASE rivai_jiradb TO rivai;
-postgres=# \c rivai postgres
+postgres=# \c rivai_jiradb postgres
 rivai=# GRANT ALL ON SCHEMA public TO rivai;
 ######################################################################
 
