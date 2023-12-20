@@ -270,18 +270,15 @@ else
                 qemu-img
                 nbdkit
                 nbd
-                # end of creating disk image packages list
-                # below packages are needed for creating jira envirionment
-                java-17-openjdk
-                java-1.8.0-openjdk
-                mariadb
-                mariadb-server
-                mariadb-connector-odbc
-                # end of jira envirionment
+                net-tools
+                postgresql
+                postgresql-server
+                postgresql-jdbc
+                java-11-openjdk
                 %end
 
                 %post
-
+                systemctl enable postgresql
                 systemctl enable sshd
                 systemctl enable systemd-networkd
                 systemctl enable systemd-resolved
@@ -303,8 +300,7 @@ else
                 cat /etc/resolv.conf
 
                 systemctl restart systemd-resolved
-
-                dnf config-manager --set-disabled rawhide updates updates-testing fedora fedora-modular fedora-cisco-openh264 updates-modular updates-testing-modular rawhide-modular
+                dnf config-manager --set-disabled updates fedora fedora-modular fedora-cisco-openh264 updates-modular
                 dnf -y remove dracut-config-generic
 
                 # Create Fedora RISC-V repo
@@ -340,16 +336,6 @@ else
                 enabled=0
                 gpgcheck=0
                 EOF
-
-                ## repo
-                # disable wrong software repo
-                sudo dnf config-manager --set-disabled fedora
-                sudo dnf config-manager --set-disabled fedora-cisco-openh264
-                sudo dnf config-manager --set-disabled fedora-modular
-                sudo dnf config-manager --set-disabled updates
-                sudo dnf config-manager --set-disabled updates-modular
-                sudo dnf update -y
-                ## repo
 
                 # systemd starts serial consoles on /dev/ttyS0 and /dev/hvc0.  The
                 # only problem is they are the same serial console.  Mask one.
