@@ -1,4 +1,4 @@
-```c
+```bash
 # 新增jira用户
 useradd -d /home/jira -m -s /bin/bash jira
 echo jira | passwd --stdin jira > /dev/null
