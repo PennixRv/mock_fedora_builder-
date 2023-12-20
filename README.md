@@ -49,4 +49,6 @@ export JAVA_OPTS="-javaagent:/home/jira/jira_workspace/atlassian-agent.jar=${LIB
 
 wget https://product-downloads.atlassian.com/software/jira/downloads/atlassian-jira-software-9.12.1.tar.gz
 tar xzvf atlassian-jira-software-9.12.1.tar.gz -C jirasoftware-installation
+cd jirasoftware-installation/atlassian-jira-software-9.12.1-standalone/bin
+./config.sh
 ```
