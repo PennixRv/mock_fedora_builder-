@@ -8,7 +8,7 @@ su jira
 cd
 
 # 准备Java环境
-sudo dnf install java-11-openjdk gcc gcc-c++ pcre pcre-devel zlib zlib-devel openssl openssl-devel
+sudo dnf install java-11-openjdk gcc gcc-c++ pcre pcre-devel zlib zlib-devel openssl openssl-devel -y
 echo "export JAVA_HOME=$(dirname $(dirname $(readlink $(readlink $(which javac)))))" >> ~/.bashrc
 echo "export JRE_HOME=$JAVA_HOME/jre" >> ~/.bashrc
 echo "export CLASSPATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar:$JRE_HOME/lib" >> ~/.bashrc
@@ -16,7 +16,7 @@ echo "export PATH=$PATH:$JAVA_HOME:$JAVA_HOME/bin:$JRE_HOME/bin:$CLASSPATH" >> ~
 source ~/.bashrc
 
 # 准备数据库
-sudo dnf install postgresql postgresql-server postgresql-jdbc java-11-openjdk
+sudo dnf install postgresql postgresql-server postgresql-jdbc -y
 sudo postgresql-setup --initdb --unit postgresql # initialize PG cluster
 sudo systemctl start postgresql                  # start cluster
 sudo su - postgres                               # login as DB admin
