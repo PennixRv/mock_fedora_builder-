@@ -14,7 +14,7 @@ echo "export JRE_HOME=\${JAVA_HOME}/../jre" >> ~/.bashrc
 source ~/.bashrc
 
 # 准备数据库
-sudo dnf install postgresql postgresql-server postgresql-jdbc postgresql-contrib
+sudo dnf -y install postgresql postgresql-server postgresql-jdbc postgresql-contrib
 sudo postgresql-setup --initdb --unit postgresql 
 sudo systemctl start postgresql
 sudo su - postgres                               # login as DB admin
