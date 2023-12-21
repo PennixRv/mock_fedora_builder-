@@ -1,4 +1,16 @@
 ```bash
+# 系统扩容
+/bin/echo "d
+4
+n
+4
+N
+w
+" | fdisk -c -u /dev/mmcblk1
+# 上面这一步解释为：对于设备mmcblk1的p4分区(即所需扩容的root)，删除(d)该分区,新建(n)之,不修改签名(N),并保存退出(w)
+# 这一操作也可简单使用 "growpart /dev/mmcblk1 4" 替换
+resize2fs  /dev/mmcblk1p4
+
 # 新增jira用户
 useradd -d /home/jira -m -s /bin/bash jira
 echo jira | passwd --stdin jira > /dev/null
@@ -13,12 +25,13 @@ echo "export JAVA_HOME=$(dirname $(dirname $(readlink $(readlink $(which javac))
 echo "export JRE_HOME=\${JAVA_HOME}/../jre" >> ~/.bashrc
 source ~/.bashrc
 
-# 准备数据库
+# 准备数据库服务
 sudo dnf -y install postgresql postgresql-server postgresql-jdbc postgresql-contrib
 sudo postgresql-setup --initdb --unit postgresql
 sudo systemctl enable postgresql
 sudo systemctl start postgresql
 
+# 添加database和user
 sudo su - postgres
 psql <<EOF
 CREATE USER atlas WITH PASSWORD 'atlas';
@@ -29,10 +42,13 @@ GRANT ALL ON SCHEMA public TO atlas;
 EOF
 exit
 
+# 调整连接认证方式
 sudo sed -i 's/ident/trust/g' /var/lib/pgsql/data/pg_hba.conf
 sudo systemctl restart postgresql
+# 测试数据库连接
 psql -h 127.0.0.1 -U atlas -W -d atlas
 
+# 准备jira
 mkdir jira_workspace
 cd jira_workspace
 mkdir -p ./{jirasoftware-installation,jirasoftware-home}
@@ -45,12 +61,13 @@ chmod -R u=rwx,go-rwx jirasoftware-home
 wget https://product-downloads.atlassian.com/software/jira/downloads/atlassian-jira-software-9.12.1.tar.gz
 tar xzvf atlassian-jira-software-9.12.1.tar.gz -C jirasoftware-installation
 
-sudo sed -i 's#jira.home =.*#jira.home = /home/jira/jira_workspace/jirasoftware-home#g' ./jirasoftware-installation/atlassian-jira-software-9.12.1-standalone/atlassian-jira/WEB-INF/classes/jira-application.properties
+# 配置jira home
+sudo sed -i 's#jira.home =.*#jira.home = /home/jira/jira_workspace/jirasoftware-home#g' \
+    ./jirasoftware-installation/atlassian-jira-software-9.12.1-standalone/atlassian-jira/WEB-INF/classes/jira-application.properties
 
-
+# 配置jira与数据库的连接
 cat << EOF > ./jirasoftware-home/dbconfig.xml
 <?xml version="1.0" encoding="UTF-8"?>
-  
 <jira-database-config>
   <name>defaultDS</name>
   <delegator-name>default</delegator-name>
@@ -82,7 +99,15 @@ wget http://124.222.2.135/zip/atlassian-agent-v1.3.1.zip
 unzip atlassian-agent-v1.3.1.zip
 export LIB_PATH=$(realpath ./jirasoftware-installation)"/atlassian-jira/WEB-INF/lib/"
 export JAVA_OPTS="-javaagent:/home/jira/jira_workspace/atlassian-agent-v1.3.1/atlassian-agent.jar=${LIB_PATH}"
+echo $JAVA_OPTS >> ~/.bashrc
+source ~/.bashrc
 
+# 启动jira
 cd ./jirasoftware-installation/atlassian-jira-software-9.12.1-standalone/bin
 ./start-jira.sh
+
+# 浏览器访问 http://localhost:8080，过程会需要根据网页上提供的key(XXXX-XXXX-XXXX-XXXX)，生成agent提供的密钥，使用下面的命令，将生成的密钥粘贴到网页
+java -jar atlassian-agent.jar -m 'jira@gmail.com' -p jira -o 'http://localhost:8080' -s 'XXXX-XXXX-XXXX-XXXX'
+
+# 流程结束
 ```
