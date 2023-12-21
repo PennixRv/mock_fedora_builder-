@@ -82,5 +82,5 @@ export LIB_PATH=$(realpath ./jirasoftware-installation)"/atlassian-jira/WEB-INF/
 export JAVA_OPTS="-javaagent:/home/jira/jira_workspace/atlassian-agent-v1.3.1/atlassian-agent.jar=${LIB_PATH}"
 
 cd ./jirasoftware-installation/atlassian-jira-software-9.12.1-standalone/bin
-./start_jira.sh
+./start-jira.sh
 ```
