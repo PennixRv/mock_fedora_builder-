@@ -271,6 +271,7 @@ else
                 nbdkit
                 nbd
                 net-tools
+                cloud-utils-growpart
                 postgresql
                 postgresql-server
                 postgresql-jdbc
