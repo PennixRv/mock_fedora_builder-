@@ -43,8 +43,37 @@ chmod -R u=rwx,go-rwx jirasoftware-home
 
 wget https://product-downloads.atlassian.com/software/jira/downloads/atlassian-jira-software-9.12.1.tar.gz
 tar xzvf atlassian-jira-software-9.12.1.tar.gz -C jirasoftware-installation
-cd jirasoftware-installation/atlassian-jira-software-9.12.1-standalone/bin
-./config.sh
+
+vim ./jirasoftware-installation/atlassian-jira-software-9.12.1-standalone/WEB-INF/classes/jira-application.properties
+/home/jira/jira_workspace/jirasoftware-home
+
+vim dbconfig.xml
+<?xml version="1.0" encoding="UTF-8"?>
+  
+<jira-database-config>
+  <name>defaultDS</name>
+  <delegator-name>default</delegator-name>
+  <database-type>postgres72</database-type>
+  <schema-name>public</schema-name>
+  <jdbc-datasource>
+    <url>jdbc:postgresql://127.0.0.1:5432/atlas</url>
+    <driver-class>org.postgresql.Driver</driver-class>
+    <username>atlas</username>
+    <password>atlas</password>
+    <pool-min-size>40</pool-min-size>
+    <pool-max-size>40</pool-max-size>
+    <pool-max-wait>30000</pool-max-wait>
+    <validation-query>select 1</validation-query>
+    <min-evictable-idle-time-millis>60000</min-evictable-idle-time-millis>
+    <time-between-eviction-runs-millis>300000</time-between-eviction-runs-millis>
+    <pool-max-idle>40</pool-max-idle>
+    <pool-remove-abandoned>true</pool-remove-abandoned>
+    <pool-remove-abandoned-timeout>300</pool-remove-abandoned-timeout>
+    <pool-test-on-borrow>false</pool-test-on-borrow>
+    <pool-test-while-idle>true</pool-test-while-idle>
+    <connection-properties>tcpKeepAlive=true;socketTimeout=240</connection-properties>
+  </jdbc-datasource>
+</jira-database-config>
 
 # 准备agent
 wget http://124.222.2.135/zip/atlassian-agent-v1.3.1.zip
