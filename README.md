@@ -10,7 +10,7 @@ cd
 # 准备Java环境
 sudo dnf install -y java-17-openjdk java-17-openjdk-devel gcc gcc-c++ pcre pcre-devel zlib zlib-devel openssl openssl-devel
 echo "export JAVA_HOME=$(dirname $(dirname $(readlink $(readlink $(which javac)))))" >> ~/.bashrc
-echo "export JRE_HOME=${JAVA_HOME}/../jre" >> ~/.bashrc
+echo "export JRE_HOME=\${JAVA_HOME}/../jre" >> ~/.bashrc
 source ~/.bashrc
 
 # 准备数据库
