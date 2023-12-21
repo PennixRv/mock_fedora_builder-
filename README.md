@@ -99,7 +99,7 @@ wget http://124.222.2.135/zip/atlassian-agent-v1.3.1.zip
 unzip atlassian-agent-v1.3.1.zip
 export LIB_PATH=$(realpath ./jirasoftware-installation)"/atlassian-jira/WEB-INF/lib/"
 export JAVA_OPTS="-javaagent:/home/jira/jira_workspace/atlassian-agent-v1.3.1/atlassian-agent.jar=${LIB_PATH}"
-echo $JAVA_OPTS >> ~/.bashrc
+echo "export JAVA_OPTS='${JAVA_OPTS}'" >> ~/.bashrc
 source ~/.bashrc
 
 # 启动jira
