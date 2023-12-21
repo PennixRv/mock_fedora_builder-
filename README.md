@@ -15,18 +15,19 @@ source ~/.bashrc
 
 # 准备数据库
 sudo dnf -y install postgresql postgresql-server postgresql-jdbc postgresql-contrib
-sudo postgresql-setup --initdb --unit postgresql 
+sudo postgresql-setup --initdb --unit postgresql
+sudo systemctl enable postgresql
 sudo systemctl start postgresql
-sudo su - postgres                               # login as DB admin
-psql                                             # enter psql shell
 
-######################################################################
+sudo su - postgres
+psql <<EOF
 CREATE USER atlas WITH PASSWORD 'atlas';
 CREATE DATABASE atlas WITH ENCODING 'UNICODE' LC_COLLATE 'C' LC_CTYPE 'C' TEMPLATE template0;
 GRANT ALL PRIVILEGES ON DATABASE atlas TO atlas;
 \c atlas postgres
 GRANT ALL ON SCHEMA public TO atlas;
-######################################################################
+EOF
+exit
 
 sudo sed -i 's/ident/trust/g' /var/lib/pgsql/data/pg_hba.conf
 sudo systemctl restart postgresql
