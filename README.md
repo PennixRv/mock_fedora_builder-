@@ -44,7 +44,7 @@ chmod -R u=rwx,go-rwx jirasoftware-home
 wget https://product-downloads.atlassian.com/software/jira/downloads/atlassian-jira-software-9.12.1.tar.gz
 tar xzvf atlassian-jira-software-9.12.1.tar.gz -C jirasoftware-installation
 
-sudo sed -i 's#jira_home =.*#jira_home = /home/jira/jira_workspace/jirasoftware-home#g' ./jirasoftware-installation/atlassian-jira-software-9.12.1-standalone/atlassian-jira/WEB-INF/classes/jira-application.properties
+sudo sed -i 's#jira.home =.*#jira.home = /home/jira/jira_workspace/jirasoftware-home#g' ./jirasoftware-installation/atlassian-jira-software-9.12.1-standalone/atlassian-jira/WEB-INF/classes/jira-application.properties
 
 
 cat << EOF > ./jirasoftware-home/dbconfig.xml
