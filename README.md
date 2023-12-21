@@ -44,7 +44,7 @@ chmod -R u=rwx,go-rwx jirasoftware-home
 wget https://product-downloads.atlassian.com/software/jira/downloads/atlassian-jira-software-9.12.1.tar.gz
 tar xzvf atlassian-jira-software-9.12.1.tar.gz -C jirasoftware-installation
 
-vim ./jirasoftware-installation/atlassian-jira-software-9.12.1-standalone/WEB-INF/classes/jira-application.properties
+vim ./jirasoftware-installation/atlassian-jira-software-9.12.1-standalone/atlassian-jira/WEB-INF/classes/jira-application.properties
 /home/jira/jira_workspace/jirasoftware-home
 
 vim dbconfig.xml
