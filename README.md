@@ -28,6 +28,7 @@ GRANT ALL PRIVILEGES ON DATABASE atlas TO atlas;
 GRANT ALL ON SCHEMA public TO atlas;
 ######################################################################
 
+sudo sed -i 's/ident/trust/g' /var/lib/pgsql/data/pg_hba.conf
 psql -h 127.0.0.1 -U atlas -W -d atlas
 
 mkdir jira_workspace
