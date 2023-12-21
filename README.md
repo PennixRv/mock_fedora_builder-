@@ -47,7 +47,7 @@ tar xzvf atlassian-jira-software-9.12.1.tar.gz -C jirasoftware-installation
 vim ./jirasoftware-installation/atlassian-jira-software-9.12.1-standalone/atlassian-jira/WEB-INF/classes/jira-application.properties
 /home/jira/jira_workspace/jirasoftware-home
 
-vim dbconfig.xml
+vim ./jirasoftware-home/dbconfig.xml
 <?xml version="1.0" encoding="UTF-8"?>
   
 <jira-database-config>
