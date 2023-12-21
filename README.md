@@ -44,10 +44,10 @@ chmod -R u=rwx,go-rwx jirasoftware-home
 wget https://product-downloads.atlassian.com/software/jira/downloads/atlassian-jira-software-9.12.1.tar.gz
 tar xzvf atlassian-jira-software-9.12.1.tar.gz -C jirasoftware-installation
 
-vim ./jirasoftware-installation/atlassian-jira-software-9.12.1-standalone/atlassian-jira/WEB-INF/classes/jira-application.properties
-/home/jira/jira_workspace/jirasoftware-home
+sudo sed -i 's#jira_home =.*#jira_home = /home/jira/jira_workspace/jirasoftware-home#g' ./jirasoftware-installation/atlassian-jira-software-9.12.1-standalone/atlassian-jira/WEB-INF/classes/jira-application.properties
 
-vim ./jirasoftware-home/dbconfig.xml
+
+cat << EOF > ./jirasoftware-home/dbconfig.xml
 <?xml version="1.0" encoding="UTF-8"?>
   
 <jira-database-config>
@@ -74,6 +74,7 @@ vim ./jirasoftware-home/dbconfig.xml
     <connection-properties>tcpKeepAlive=true;socketTimeout=240</connection-properties>
   </jdbc-datasource>
 </jira-database-config>
+EOF
 
 # 准备agent
 wget http://124.222.2.135/zip/atlassian-agent-v1.3.1.zip
