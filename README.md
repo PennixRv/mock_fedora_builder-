@@ -32,7 +32,7 @@ exit
 sudo sed -i 's/ident/trust/g' /var/lib/pgsql/data/pg_hba.conf
 sudo systemctl restart postgresql
 # 测试数据库连接
-psql -h 127.0.0.1 -U atlas -W -d atlas
+# psql -h 127.0.0.1 -U atlas -W -d atlas
 
 # 新增jira用户
 useradd -d /home/jira -m -s /bin/bash jira
@@ -40,7 +40,7 @@ echo jira | passwd --stdin jira > /dev/null
 usermod -a -G root jira
 echo "jira     ALL=(ALL)     NOPASSWD: ALL" >> /etc/sudoers
 su jira
-cd
+cd ~
 
 # 准备Java环境
 sudo dnf install -y java-17-openjdk java-17-openjdk-devel gcc gcc-c++ pcre pcre-devel zlib zlib-devel openssl openssl-devel
