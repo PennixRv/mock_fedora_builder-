@@ -285,6 +285,7 @@ else
                 openssl
                 openssl-devel
                 cloud-utils-growpart
+                htop
                 %end
 
                 %post
