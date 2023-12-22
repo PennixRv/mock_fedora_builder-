@@ -275,7 +275,15 @@ else
                 postgresql
                 postgresql-server
                 postgresql-jdbc
-                java-11-openjdk
+                java-17-openjdk
+                java-17-openjdk-devel
+                pcre
+                pcre-devel
+                zlib
+                zlib-devel
+                openssl
+                openssl-devel
+                cloud-utils-growpart
                 %end
 
                 %post
