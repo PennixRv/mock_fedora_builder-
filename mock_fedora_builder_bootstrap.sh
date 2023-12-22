@@ -275,6 +275,7 @@ else
                 postgresql
                 postgresql-server
                 postgresql-jdbc
+                postgresql-contrib
                 java-17-openjdk
                 java-17-openjdk-devel
                 pcre
