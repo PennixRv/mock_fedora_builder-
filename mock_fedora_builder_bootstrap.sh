@@ -372,31 +372,6 @@ else
                 sed -i '/swap/d' /etc/fstab
                 sed -i '/efi/d' /etc/fstab
 
-                # replace the auto-generated boot partition
-                pushd /tmp
-                /usr/bin/wget -P boot  --progress=dot "https://mirror.ghproxy.com/https://raw.githubusercontent.com/PennixRv/mock_fedora_builder/main/prebuild/vf2_kernel_pack_6.1.31.tar.xz.0"
-                /usr/bin/wget -P boot  --progress=dot "https://mirror.ghproxy.com/https://raw.githubusercontent.com/PennixRv/mock_fedora_builder/main/prebuild/vf2_kernel_pack_6.1.31.tar.xz.1"
-                /usr/bin/wget -P boot  --progress=dot "https://mirror.ghproxy.com/https://raw.githubusercontent.com/PennixRv/mock_fedora_builder/main/prebuild/vf2_kernel_pack_6.1.31.tar.xz.2"
-                pushd boot
-                cat vf2_kernel_pack_6.1.31.tar.xz.* | tar -xJv
-                tar xJvf 6.1.31.tar.xz
-                popd
-                sudo rm -rf /boot/*
-                sudo rm -rf /boot/.*
-                sudo rm -rf /lib/modules/*
-                sudo mv -vf boot/6.1.31 /lib/modules/
-                sudo mv -vf boot/Image.gz /boot
-                sudo mv -vf boot/initramfs.cpio.gz /boot
-                sudo mkdir -p /boot/dtbs/starfive
-                sudo mv -vf boot/jh7110-visionfive-v2.dtb /boot/dtbs/starfive
-                sudo mv -vf boot/vf2_uEnv.txt /boot
-                sudo mkdir -p /boot/extlinux/
-                sudo mv -vf boot/extlinux.conf /boot/extlinux/extlinux.conf
-                sudo rm -rf boot
-                ROOT_UUID=\$(grep ' / ' /etc/fstab | awk '{printf \$1}' | sed -e 's/^UUID=//g')
-                sudo sed -i -e "s/@@ROOTUUID@@/\${ROOT_UUID}/g"   \
-                    /boot/extlinux/extlinux.conf
-                popd
                 %end
 				WEOF
             fi
@@ -767,12 +742,40 @@ else
                 -dracut-config-rescue
                 %end
                 %post
+
                 sed -i \
                 -e 's/^ui/# ui/g'	\
                 -e 's/^menu autoboot/# menu autoboot/g'	\
                 -e 's/^menu hidden/# menu hidden/g'	\
                 -e 's/^totaltimeout/# totaltimeout/g'	\
-                /boot/extlinux/extlinux.conf
+                    /boot/extlinux/extlinux.conf
+
+                # replace the auto-generated boot partition
+                pushd /tmp
+                /usr/bin/wget -P boot  --progress=dot "https://mirror.ghproxy.com/https://raw.githubusercontent.com/PennixRv/mock_fedora_builder/main/prebuild/vf2_kernel_pack_6.1.31.tar.xz.0"
+                /usr/bin/wget -P boot  --progress=dot "https://mirror.ghproxy.com/https://raw.githubusercontent.com/PennixRv/mock_fedora_builder/main/prebuild/vf2_kernel_pack_6.1.31.tar.xz.1"
+                /usr/bin/wget -P boot  --progress=dot "https://mirror.ghproxy.com/https://raw.githubusercontent.com/PennixRv/mock_fedora_builder/main/prebuild/vf2_kernel_pack_6.1.31.tar.xz.2"
+                pushd boot
+                cat vf2_kernel_pack_6.1.31.tar.xz.* | tar -xJv
+                tar xJvf 6.1.31.tar.xz
+                popd
+                sudo rm -rf /boot/*
+                sudo rm -rf /boot/.*
+                sudo rm -rf /lib/modules/*
+                sudo mv -vf boot/6.1.31 /lib/modules/
+                sudo mv -vf boot/Image.gz /boot
+                sudo mv -vf boot/initramfs.cpio.gz /boot
+                sudo mkdir -p /boot/dtbs/starfive
+                sudo mv -vf boot/jh7110-visionfive-v2.dtb /boot/dtbs/starfive
+                sudo mv -vf boot/vf2_uEnv.txt /boot
+                sudo mkdir -p /boot/extlinux/
+                sudo mv -vf boot/extlinux.conf /boot/extlinux/extlinux.conf
+                sudo rm -rf boot
+                ROOT_UUID=\$(grep ' / ' /etc/fstab | awk '{printf \$1}' | sed -e 's/^UUID=//g')
+                sudo sed -i -e "s/@@ROOTUUID@@/\${ROOT_UUID}/g"   \
+                    /boot/extlinux/extlinux.conf
+                popd
+
                 %end
 				WEOF
             fi
