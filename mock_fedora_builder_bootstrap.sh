@@ -731,7 +731,7 @@ else
                 zerombr
                 clearpart --all --initlabel --disklabel=gpt
                 part /boot --size=512 --fstype vfat --asprimary
-                part / --fstype="ext4" --size=12288
+                part / --fstype=ext4 --size=12288
                 bootloader --location=none --extlinux --append="console=tty0 console=ttyS0,115200 earlycon rootwait selinux=0"
                 %packages
                 extlinux-bootloader
@@ -785,28 +785,27 @@ else
 
                 zerombr
                 clearpart --all --initlabel --disklabel=gpt
-                part /boot/efi --fstype=vfat --size=100
+                part /boot/efi --fstype=efi --size=500
                 part / --fstype=ext4 --size=12288 --label=rootfs --grow
-                bootloader --location=none --timeout=1 --append="console=tty0 console=ttyS0,115200 earlycon rootwait selinux=0"
+                bootloader --location=mbr --append="console=tty0 console=ttyS0,115200 earlycon rootwait selinux=0"
 
                 %packages
                 @core
                 efibootmgr
-
                 grub2
-                # grub2-common
+                grub2-common
                 grub2-efi-riscv64
-                # grub2-efi-riscv64-cdboot
+                grub2-efi-riscv64-cdboot
                 grub2-efi-riscv64-modules
-                # grub2-pc-modules
-                # grub2-tools
-                # grub2-tools-extra
-                # grub2-tools-minimal
+                grub2-pc-modules
+                grub2-tools
+                grub2-tools-extra
+                grub2-tools-minimal
 
                 opensbi-unstable
                 linux-firmware
-                uboot-tools
-                uboot-images-riscv64
+                -uboot-tools
+                -uboot-images-riscv64
                 -dracut-config-rescue
                 dracut-config-generic
                 %end
