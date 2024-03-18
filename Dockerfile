@@ -9,16 +9,14 @@ ARG proxy_port="7890"
 
 ENV DNF_PROXY=""
 
-RUN if [ "${proxy_ipv4}" != "0.0.0.0" ]; then \
-        echo "proxy=http://${proxy_ipv4}:${proxy_port}" >> /etc/dnf/dnf.conf; \
-    fi && \
-    dnf update -y && \
-	dnf install -y util-linux mock qemu-system-riscv git vim qemu-user-static \
-                wget gdisk dosfstools e2fsprogs util-linux-core xz kpartx && \
+# 安装构建所需的系列工具 由于mock工具的要求 需单独创建mock用户组和用户 并在该用户空间中执行构建任务
+RUN dnf update -y && \
+	dnf install -y util-linux mock qemu-system-riscv git vim qemu-user-static wget gdisk dosfstools e2fsprogs util-linux-core xz kpartx && \
 	adduser riscv && \
 	echo "riscv ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers && \
 	usermod -aG root riscv && \
 	usermod -aG mock riscv
+
 USER riscv
 RUN cd ${HOME} && cat >> ./fedora-38-riscv64.cfg <<EOF
 config_opts['target_arch'] = 'riscv64'

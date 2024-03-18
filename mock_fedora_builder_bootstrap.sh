@@ -1,6 +1,6 @@
 #!/bin/bash
 echo "$(tput setaf 4)#####################################################################################"
-echo "Welcome! This is a docker-based tool for building rpm package and Fedora system image"
+echo "Welcome! This is a Docker&Mock-based tool for building rpm package and Fedora system image"
 echo "                                                                                     "
 echo "██████╗ ██╗██╗   ██╗ █████╗ ██╗    ███████╗███████╗██████╗  ██████╗ ██████╗  █████╗  "
 echo "██╔══██╗██║██║   ██║██╔══██╗██║    ██╔════╝██╔════╝██╔══██╗██╔═══██╗██╔══██╗██╔══██╗ "
@@ -47,18 +47,14 @@ stage1="mock_fedora_builder_stage1"
 stage2="mock_fedora_builder_stage2"
 stage1_container=${stage1}_container
 
-
-
 run_stage1_container() {
     if [ "$PREFER_PROXY" = "y" -o "$PREFER_PROXY" = "" ]; then
-        docker run -itd --privileged=true -P \
+        docker run -itd --privileged -P \
                -h rv_builder --name $stage1_container \
-               -e "DOCKER_HOST=${PROXY_IPV4}" \
-               -e "http_proxy=http://${PROXY_IPV4}:${PROXY_PORT}" \
-               -e "https_proxy=https://${PROXY_IPV4}:${PROXY_PORT}" \
+               --network host \
                $stage1:latest /bin/bash
     else
-        docker run -itd --privileged=true -P \
+        docker run -itd --privileged -P \
                -h rv_builder --name $stage1_container \
                $stage1:latest /bin/bash
     fi
@@ -834,7 +830,8 @@ else
 
             sed -i 's/^[ \t]*//' $TARGET_KICKSTART_FILE
             ksflatten -c $TARGET_KICKSTART_FILE -o $TARGET_KICKSTART_FILE
-            cp $TARGET_KICKSTART_FILE ./preconfigured/new_${TARGET_KICKSTART_FILE}
+            MEW_FILE=$(basename ${TARGET_KICKSTART_FILE})
+            cp $TARGET_KICKSTART_FILE ./preconfigured/new_${NEW_FILE}
         ;;
         3) echo "customized"
         ;;
@@ -854,14 +851,12 @@ else
     else
         echo "INFO: create and run $STAGE2_CONTAINER ..."
         if [ "$PREFER_PROXY" = "y" -o "$PREFER_PROXY" = "" ]; then
-            docker run -itd --privileged=true -P \
+            docker run -itd --privileged -P \
                 -h rv_builder --name $STAGE2_CONTAINER \
-                -e "DOCKER_HOST=${PROXY_IPV4}" \
-                -e "http_proxy=http://${PROXY_IPV4}:${PROXY_PORT}" \
-                -e "https_proxy=https://${PROXY_IPV4}:${PROXY_PORT}" \
+                --network host \
                 $stage2:latest /bin/bash
         else
-            docker run -itd --privileged=true -P \
+            docker run -itd --privileged -P \
                 -h rv_builder --name $STAGE2_CONTAINER \
                 $stage2:latest /bin/bash
         fi
