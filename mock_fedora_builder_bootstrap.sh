@@ -876,20 +876,20 @@ else
             \"
                 sed -i '/MountError(umount_fail_fmt/d' /usr/lib/python3.11/site-packages/imgcreate/fs.py && \
                 sed -i 's/grub2-efi-aa64/grub2-efi-riscv64/g' /usr/lib/python3.11/site-packages/appcreate/appliance.py && \
-                cd /builddir && [ ! -f "images/${SELECTED_KICKSTART_NAME}/${SELECTED_KICKSTART_NAME}-sda.raw.xz" ] && \
+                cd /builddir && [ ! -f "images/${SELECTED_KICKSTART_NAME}/${SELECTED_KICKSTART_NAME}_sda.raw.xz" ] && \
                     appliance-creator -c ./${SELECTED_KICKSTART_NAME}.ks --cache ./cache -o ./images --format raw \
                     --name $SELECTED_KICKSTART_NAME --vcpu=20 --vmem=10240 --version f38 --release \$(date +%Y%m%d-%H%M%S)
             \"
         "
     mkdir -p output
-    if [ ! -f "./output/${SELECTED_KICKSTART_NAME}-sda.raw.xz" ];then \
-        docker cp $STAGE2_CONTAINER:/home/riscv/mock_root_dir/builddir/images/$SELECTED_KICKSTART_NAME/${SELECTED_KICKSTART_NAME}-sda.raw.xz ./output
+    if [ ! -f "./output/${SELECTED_KICKSTART_NAME}_sda.raw.xz" ];then \
+        docker cp $STAGE2_CONTAINER:/home/riscv/mock_root_dir/builddir/images/$SELECTED_KICKSTART_NAME/${SELECTED_KICKSTART_NAME}_sda.raw.xz ./output
     fi
     docker cp $STAGE2_CONTAINER:/home/riscv/mock_result_dir/root.log ./output
 
     if [ "$TARGET_IMAGE_TYPE" = "1" ]; then
         pushd ./output
-        if [ ! -f "${SELECTED_KICKSTART_NAME}-sda.raw" ];then unxz -kfv ${SELECTED_KICKSTART_NAME}-sda.raw.xz; fi && \
+        if [ ! -f "${SELECTED_KICKSTART_NAME}-sda.raw" ];then unxz -kfv ${SELECTED_KICKSTART_NAME}_sda.raw.xz; fi && \
         if [ ! -f "u-boot-spl.bin.normal.out" ];then \
             wget  --progress=dot https://github.com/starfive-tech/VisionFive2/releases/download/JH7110_VF2_515_v3.9.3/u-boot-spl.bin.normal.out; fi && \
         if [ ! -f "visionfive2_fw_payload.img" ];then \

@@ -24,7 +24,7 @@ config_opts['legal_host_arches'] = ('riscv64',)
 config_opts['qemu_user_static_mapping'] = {
     'riscv64': 'riscv64',
 }
-config_opts['dev_loop_count'] = 64
+config_opts['dev_loop_count'] = 12
 config_opts['macros']['%_smp_mflags'] = "-j20"
 config_opts['use_bootstrap'] = True
 config_opts['dnf_install_command'] = 'makecache'
@@ -34,13 +34,9 @@ config_opts['cleanup_on_failure'] = True
 config_opts['package_manager_max_attempts'] = 2
 config_opts['package_manager_attempt_delay'] = 10
 
-config_opts['http_proxy']  = os.getenv("http_proxy")
-config_opts['https_proxy'] = os.getenv("https_proxy")
-config_opts['docker_host'] = os.getenv("DOCKER_HOST")
-
 config_opts['releasever'] = '38'
 config_opts['root'] = 'rivai-fedora-{{ releasever }}-{{ target_arch }}'
-config_opts['mirrored'] = config_opts['target_arch'] != 'i686'
+config_opts['mirrored'] = config_opts['target_arch'] != 'riscv64'
 config_opts['chroot_setup_cmd'] = 'install @{% if mirrored %}buildsys-{% endif %}build'
 config_opts['dist'] = 'fc{{ releasever }}'
 config_opts['extra_chroot_dirs'] = [ '/run/lock', ]
