@@ -133,7 +133,7 @@ if [ "$(docker images | awk '{ print $1 }' | grep "$stage2")" = "" ];then
         "
         cd /home/riscv && \
         mock -r ./$MOCK_CONFIG --rootdir /home/riscv/mock_root_dir --resultdir /home/riscv/mock_result_dir \
-            --install anaconda lorax git vim pykickstart dnf hfsplus-tools lorax-lmc-novirt wget \
+            --install sudo anaconda lorax git vim pykickstart dnf hfsplus-tools lorax-lmc-novirt wget \
             appliance-tools livecd-tools
         "
     docker commit -p $stage1_container $stage2
@@ -877,7 +877,7 @@ else
                 sed -i '/MountError(umount_fail_fmt/d' /usr/lib/python3.11/site-packages/imgcreate/fs.py && \
                 sed -i 's/grub2-efi-aa64/grub2-efi-riscv64/g' /usr/lib/python3.11/site-packages/appcreate/appliance.py && \
                 cd /builddir && [ ! -f "images/${SELECTED_KICKSTART_NAME}/${SELECTED_KICKSTART_NAME}_sda.raw.xz" ] && \
-                    appliance-creator -c ./${SELECTED_KICKSTART_NAME}.ks --cache ./cache -o ./images --format raw \
+                    sudo appliance-creator -c ./${SELECTED_KICKSTART_NAME}.ks --cache ./cache -o ./images --format raw \
                     --name $SELECTED_KICKSTART_NAME --vcpu=20 --vmem=10240 --version f38 --release \$(date +%Y%m%d-%H%M%S)
             \"
         "
