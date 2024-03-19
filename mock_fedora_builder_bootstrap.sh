@@ -830,8 +830,8 @@ else
 
             sed -i 's/^[ \t]*//' $TARGET_KICKSTART_FILE
             ksflatten -c $TARGET_KICKSTART_FILE -o $TARGET_KICKSTART_FILE
-            MEW_FILE=$(basename ${TARGET_KICKSTART_FILE})
-            cp $TARGET_KICKSTART_FILE ./preconfigured/new_${NEW_FILE}
+            MEW_FILE="new_$(basename ${TARGET_KICKSTART_FILE})"
+            cp $TARGET_KICKSTART_FILE ./preconfigured/${NEW_FILE}
         ;;
         3) echo "customized"
         ;;
