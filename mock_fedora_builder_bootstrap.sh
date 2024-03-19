@@ -117,7 +117,7 @@ if [ "$(docker images | awk '{ print $1 }' | grep "$stage2")" = "" ];then
         cd /home/riscv && \
         sudo chown riscv:riscv ./$MOCK_CONFIG && \
         mkdir -p ./mock_root_dir ./mock_result_dir && \
-        mock -r ./$MOCK_CONFIG --init --forcearch=riscv64
+        mock -r ./$MOCK_CONFIG --init --forcearch=riscv64 \
             --rootdir /home/riscv/mock_root_dir --resultdir /home/riscv/mock_result_dir
         "
     if [ "$PREFER_PROXY" = "y" -o "$PREFER_PROXY" = "" ]; then
