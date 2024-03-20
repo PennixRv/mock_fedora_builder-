@@ -10,10 +10,7 @@ ARG proxy_port="7890"
 ENV DNF_PROXY=""
 
 # 安装构建所需的系列工具 由于mock工具的要求 需单独创建mock用户组和用户 并在该用户空间中执行构建任务
-RUN if [ "${proxy_ipv4}" != "0.0.0.0" ]; then \
-        echo "proxy=http://${proxy_ipv4}:${proxy_port}" >> /etc/dnf/dnf.conf; \
-    fi && \
-	dnf update -y && \
+RUN dnf update -y && \
 	dnf install -y util-linux mock qemu-system-riscv git vim qemu-user-static wget gdisk dosfstools e2fsprogs util-linux-core xz kpartx && \
 	adduser riscv && \
 	echo "riscv ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers && \
@@ -27,7 +24,7 @@ config_opts['legal_host_arches'] = ('riscv64',)
 config_opts['qemu_user_static_mapping'] = {
     'riscv64': 'riscv64',
 }
-config_opts['dev_loop_count'] = 12
+config_opts['dev_loop_count'] = 64
 config_opts['macros']['%_smp_mflags'] = "-j20"
 config_opts['use_bootstrap'] = True
 config_opts['dnf_install_command'] = 'makecache'
@@ -36,7 +33,7 @@ config_opts['cleanup_on_success'] = True
 config_opts['cleanup_on_failure'] = True
 config_opts['package_manager_max_attempts'] = 2
 config_opts['package_manager_attempt_delay'] = 10
-
+config_opts['forcearch'] = 'riscv64'
 config_opts['releasever'] = '38'
 config_opts['root'] = 'rivai-fedora-{{ releasever }}-{{ target_arch }}'
 config_opts['mirrored'] = config_opts['target_arch'] != 'riscv64'
