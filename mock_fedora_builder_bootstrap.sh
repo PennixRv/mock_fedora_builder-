@@ -1,6 +1,6 @@
 #!/bin/bash
 echo "$(tput setaf 4)#####################################################################################"
-echo "Welcome! This is a docker-based tool for building rpm package and Fedora system image"
+echo "Welcome! This is a Docker&Mock-based tool for building rpm package and Fedora system image"
 echo "                                                                                     "
 echo "██████╗ ██╗██╗   ██╗ █████╗ ██╗    ███████╗███████╗██████╗  ██████╗ ██████╗  █████╗  "
 echo "██╔══██╗██║██║   ██║██╔══██╗██║    ██╔════╝██╔════╝██╔══██╗██╔═══██╗██╔══██╗██╔══██╗ "
@@ -47,18 +47,14 @@ stage1="mock_fedora_builder_stage1"
 stage2="mock_fedora_builder_stage2"
 stage1_container=${stage1}_container
 
-
-
 run_stage1_container() {
     if [ "$PREFER_PROXY" = "y" -o "$PREFER_PROXY" = "" ]; then
-        docker run -itd --privileged=true -P \
+        docker run -itd --privileged -P \
                -h rv_builder --name $stage1_container \
-               -e "DOCKER_HOST=${PROXY_IPV4}" \
-               -e "http_proxy=http://${PROXY_IPV4}:${PROXY_PORT}" \
-               -e "https_proxy=https://${PROXY_IPV4}:${PROXY_PORT}" \
+               --network host \
                $stage1:latest /bin/bash
     else
-        docker run -itd --privileged=true -P \
+        docker run -itd --privileged -P \
                -h rv_builder --name $stage1_container \
                $stage1:latest /bin/bash
     fi
@@ -121,7 +117,7 @@ if [ "$(docker images | awk '{ print $1 }' | grep "$stage2")" = "" ];then
         cd /home/riscv && \
         sudo chown riscv:riscv ./$MOCK_CONFIG && \
         mkdir -p ./mock_root_dir ./mock_result_dir && \
-        mock -r ./$MOCK_CONFIG --init --forcearch=riscv64
+        mock -r ./$MOCK_CONFIG --init --forcearch=riscv64 \
             --rootdir /home/riscv/mock_root_dir --resultdir /home/riscv/mock_result_dir
         "
     if [ "$PREFER_PROXY" = "y" -o "$PREFER_PROXY" = "" ]; then
@@ -137,7 +133,7 @@ if [ "$(docker images | awk '{ print $1 }' | grep "$stage2")" = "" ];then
         "
         cd /home/riscv && \
         mock -r ./$MOCK_CONFIG --rootdir /home/riscv/mock_root_dir --resultdir /home/riscv/mock_result_dir \
-            --install anaconda lorax git vim pykickstart dnf hfsplus-tools lorax-lmc-novirt wget \
+            --install sudo anaconda lorax git vim pykickstart dnf hfsplus-tools lorax-lmc-novirt wget \
             appliance-tools livecd-tools
         "
     docker commit -p $stage1_container $stage2
@@ -834,7 +830,8 @@ else
 
             sed -i 's/^[ \t]*//' $TARGET_KICKSTART_FILE
             ksflatten -c $TARGET_KICKSTART_FILE -o $TARGET_KICKSTART_FILE
-            cp $TARGET_KICKSTART_FILE ./preconfigured/new_${TARGET_KICKSTART_FILE}
+            MEW_FILE="new_$(basename ${TARGET_KICKSTART_FILE})"
+            cp $TARGET_KICKSTART_FILE ./preconfigured/${NEW_FILE}
         ;;
         3) echo "customized"
         ;;
@@ -854,14 +851,12 @@ else
     else
         echo "INFO: create and run $STAGE2_CONTAINER ..."
         if [ "$PREFER_PROXY" = "y" -o "$PREFER_PROXY" = "" ]; then
-            docker run -itd --privileged=true -P \
+            docker run -itd --privileged -P \
                 -h rv_builder --name $STAGE2_CONTAINER \
-                -e "DOCKER_HOST=${PROXY_IPV4}" \
-                -e "http_proxy=http://${PROXY_IPV4}:${PROXY_PORT}" \
-                -e "https_proxy=https://${PROXY_IPV4}:${PROXY_PORT}" \
+                --network host \
                 $stage2:latest /bin/bash
         else
-            docker run -itd --privileged=true -P \
+            docker run -itd --privileged -P \
                 -h rv_builder --name $STAGE2_CONTAINER \
                 $stage2:latest /bin/bash
         fi
@@ -881,20 +876,20 @@ else
             \"
                 sed -i '/MountError(umount_fail_fmt/d' /usr/lib/python3.11/site-packages/imgcreate/fs.py && \
                 sed -i 's/grub2-efi-aa64/grub2-efi-riscv64/g' /usr/lib/python3.11/site-packages/appcreate/appliance.py && \
-                cd /builddir && [ ! -f "images/${SELECTED_KICKSTART_NAME}/${SELECTED_KICKSTART_NAME}-sda.raw.xz" ] && \
-                    appliance-creator -c ./${SELECTED_KICKSTART_NAME}.ks --cache ./cache -o ./images --format raw \
+                cd /builddir && [ ! -f "images/${SELECTED_KICKSTART_NAME}/${SELECTED_KICKSTART_NAME}_sda.raw.xz" ] && \
+                    sudo appliance-creator -c ./${SELECTED_KICKSTART_NAME}.ks --cache ./cache -o ./images --format raw \
                     --name $SELECTED_KICKSTART_NAME --vcpu=20 --vmem=10240 --version f38 --release \$(date +%Y%m%d-%H%M%S)
             \"
         "
     mkdir -p output
-    if [ ! -f "./output/${SELECTED_KICKSTART_NAME}-sda.raw.xz" ];then \
-        docker cp $STAGE2_CONTAINER:/home/riscv/mock_root_dir/builddir/images/$SELECTED_KICKSTART_NAME/${SELECTED_KICKSTART_NAME}-sda.raw.xz ./output
+    if [ ! -f "./output/${SELECTED_KICKSTART_NAME}_sda.raw.xz" ];then \
+        docker cp $STAGE2_CONTAINER:/home/riscv/mock_root_dir/builddir/images/$SELECTED_KICKSTART_NAME/${SELECTED_KICKSTART_NAME}_sda.raw.xz ./output
     fi
     docker cp $STAGE2_CONTAINER:/home/riscv/mock_result_dir/root.log ./output
 
     if [ "$TARGET_IMAGE_TYPE" = "1" ]; then
         pushd ./output
-        if [ ! -f "${SELECTED_KICKSTART_NAME}-sda.raw" ];then unxz -kfv ${SELECTED_KICKSTART_NAME}-sda.raw.xz; fi && \
+        if [ ! -f "${SELECTED_KICKSTART_NAME}-sda.raw" ];then unxz -kfv ${SELECTED_KICKSTART_NAME}_sda.raw.xz; fi && \
         if [ ! -f "u-boot-spl.bin.normal.out" ];then \
             wget  --progress=dot https://github.com/starfive-tech/VisionFive2/releases/download/JH7110_VF2_515_v3.9.3/u-boot-spl.bin.normal.out; fi && \
         if [ ! -f "visionfive2_fw_payload.img" ];then \

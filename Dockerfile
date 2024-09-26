@@ -9,16 +9,14 @@ ARG proxy_port="7890"
 
 ENV DNF_PROXY=""
 
-RUN if [ "${proxy_ipv4}" != "0.0.0.0" ]; then \
-        echo "proxy=http://${proxy_ipv4}:${proxy_port}" >> /etc/dnf/dnf.conf; \
-    fi && \
-    dnf update -y && \
-	dnf install -y util-linux mock qemu-system-riscv git vim qemu-user-static \
-                wget gdisk dosfstools e2fsprogs util-linux-core xz kpartx && \
+# 安装构建所需的系列工具 由于mock工具的要求 需单独创建mock用户组和用户 并在该用户空间中执行构建任务
+RUN dnf update -y && \
+	dnf install -y util-linux mock qemu-system-riscv git vim qemu-user-static wget gdisk dosfstools e2fsprogs util-linux-core xz kpartx && \
 	adduser riscv && \
 	echo "riscv ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers && \
 	usermod -aG root riscv && \
 	usermod -aG mock riscv
+
 USER riscv
 RUN cd ${HOME} && cat >> ./fedora-38-riscv64.cfg <<EOF
 config_opts['target_arch'] = 'riscv64'
@@ -35,14 +33,10 @@ config_opts['cleanup_on_success'] = True
 config_opts['cleanup_on_failure'] = True
 config_opts['package_manager_max_attempts'] = 2
 config_opts['package_manager_attempt_delay'] = 10
-
-config_opts['http_proxy']  = os.getenv("http_proxy")
-config_opts['https_proxy'] = os.getenv("https_proxy")
-config_opts['docker_host'] = os.getenv("DOCKER_HOST")
-
+config_opts['forcearch'] = 'riscv64'
 config_opts['releasever'] = '38'
 config_opts['root'] = 'rivai-fedora-{{ releasever }}-{{ target_arch }}'
-config_opts['mirrored'] = config_opts['target_arch'] != 'i686'
+config_opts['mirrored'] = config_opts['target_arch'] != 'riscv64'
 config_opts['chroot_setup_cmd'] = 'install @{% if mirrored %}buildsys-{% endif %}build'
 config_opts['dist'] = 'fc{{ releasever }}'
 config_opts['extra_chroot_dirs'] = [ '/run/lock', ]
